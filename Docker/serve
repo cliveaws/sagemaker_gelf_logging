@@ -1,0 +1,10 @@
+#!/bin/bash
+
+mkfifo /sagemaker/gelf_fifo 
+python /sagemaker/gelf_client.py &
+
+# make our logging process nicer than the rest to help prevent it blocking the stuff that does the work
+PID=`ps -A | grep python | awk '//{print $1}'`
+renice -n 10 -p $PID
+
+python3 /sagemaker/serve.py
