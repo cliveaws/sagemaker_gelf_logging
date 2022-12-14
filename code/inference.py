@@ -16,7 +16,7 @@ logger.addHandler(GelfUdpHandler(host=os.environ['GELF_LOGGING_HOST'], port=1220
 
 
 
-def handler(data, context, req, res):
+def handler(data, context, res=None):
     """Handle request.
     Args:
         data (obj): the request data
@@ -24,25 +24,22 @@ def handler(data, context, req, res):
     Returns:
         (bytes, string): data to return to client, (optional) response content type
     """
-    #unpack our custom attributes
-    ca = json.loads(context.custom_attributes)
-    logging.info(f"start invocation {context.rest_uri} {ca['content']}")   
-    ca['content'] = 'This is a different test'
-    
-    logging.info(f'req headers: {req.headers}')
+    if res != None:
+        #unpack our custom attributes
+        custom_attrib = json.loads(context.custom_attributes)
 
-    
-    
-    context = context._replace(custom_attributes = json.dumps(ca))
-    logger.info(f'context: {context}')
-   
-    
-    processed_input = _process_input(data, context)
-    response = requests.post(context.rest_uri, data=processed_input)
-    res.append_header('CustomAttributes','some test attribute')
+
+        processed_input = _process_input(data, context)
+        response = requests.post(context.rest_uri, data=processed_input)
+
+        # Update our custom attributes and add a new field
+        custom_attrib['content'] = 'This is some new content'
+        custom_attrib['new_field'] = 'this is a new field'
+        res.append_header('X-AMZN-SAGEMAKER-CUSTOM-ATTRIBUTES',json.dumps(custom_attrib))
+
     body, content_type = _process_output(response, context)
 
-    return body, content_type, json.dumps(ca)
+    return body, content_type
 
 def _process_input(data, context):
     if context.request_content_type == 'application/json':

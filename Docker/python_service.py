@@ -265,8 +265,7 @@ class PythonServiceResource:
         try:
             res.status = falcon.HTTP_200
  
-            res.body, res.content_type, custom_attributes = self._handlers(data, context, req, res)
-            log.info(f'res :{res.headers}')
+            res.body, res.content_type = self._handlers(data, context, res)
  
         except Exception as e:  # pylint: disable=broad-except
             log.exception("exception handling request: {}".format(e))
