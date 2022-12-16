@@ -9,14 +9,11 @@ import subprocess
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-#logger.addHandler(GelfTcpHandler(host='127.0.0.1', port=9401))
-logger.addHandler(GelfUdpHandler(host=os.environ['GELF_LOGGING_HOST'], port=12201))
-#logger.addHandler(GelfTlsHandler(host='127.0.0.1', port=9403))
-#logger.addHandler(GelfHttpHandler(host='127.0.0.1', port=9404))
+#logger.addHandler(GelfUdpHandler(host=os.environ['GELF_LOGGING_HOST'], port=12201))
 
 
 
-def handler(data, context, res=None):
+def handler(data, context, req=None, res=None):
     """Handle request.
     Args:
         data (obj): the request data
@@ -24,6 +21,9 @@ def handler(data, context, res=None):
     Returns:
         (bytes, string): data to return to client, (optional) response content type
     """
+    if req != None:
+        logger.info(req.headers)
+        
     if res != None:
         #unpack our custom attributes
         custom_attrib = json.loads(context.custom_attributes)

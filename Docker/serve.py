@@ -338,12 +338,14 @@ class ServiceManager(object):
         p = subprocess.Popen(self._gunicorn_command.split(), env=env)
         log.info("started gunicorn (pid: %d)", p.pid)
         self._gunicorn = p
+        self._redirect_to_gelf(p.pid)
 
     def _start_nginx(self):
         self._log_version("/usr/sbin/nginx -V", "nginx version info:")
         p = subprocess.Popen("/usr/sbin/nginx -c /sagemaker/nginx.conf".split())
         log.info("started nginx (pid: %d)", p.pid)
         self._nginx = p
+        self._redirect_to_gelf(p.pid)
         
 
     def _log_version(self, command, message):
@@ -502,10 +504,8 @@ class ServiceManager(object):
             # make sure gunicorn is up
             with self._timeout(seconds=self._gunicorn_timeout_seconds):
                 self._wait_for_gunicorn()
-            self._redirect_to_gelf(self._gunicorn.pid)
                 
         self._start_nginx()
-        self._redirect_to_gelf(self._nginx.pid)
         with open('/sagemaker/gelf_fifo', 'w') as f:
             f.write('this is a test')
         self._state = "started"
