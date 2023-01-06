@@ -31,9 +31,16 @@ To capture the stdout/stderr streams we use the reredirect utility. After serve.
 The notebook get_started_mnist_deploy.ipynb shows how to build the extended docker container and use it to forward messages to a GELF compatible endpoint. 
 
 ## Test endpoint
+ See the separate README.md file in the test subdirectory
 
 
 # Capturing and modifying CustomAttributes in inference.py
 
-to be completed
+The notebook also includes a couple of modifications to support reading and modifying the CustomAtttributes header in the incoming request. CustomAttributes can be set when using the [invoke_endpoint](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime.html#SageMakerRuntime.Client.invoke_endpoint) API boto3 SDK.
+
+In the standard container, CustomAttributes are copied from the the request header and added to the context which is passed into the handler function in inference.py.
+
+In this modified version, python_service.py has been updated to pass the [request and response](https://falcon.readthedocs.io/en/stable/api/request_and_response_wsgi.html) objects into the handler function as well as the context. The handler fuction can then use these extra objects to directly access the CustomAttributes in the request and to update CustomAttributes in the 'X-AMZN-SAGEMAKER-CUSTOM-ATTRIBUTES' header of the repsonse.
+
+Note that non-sagemaker headers will be stripped out of the response, so to pass additional information back to the client calling invoke_endpoint() it must be added to the CustomAttributes.
 
