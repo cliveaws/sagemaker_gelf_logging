@@ -14,9 +14,9 @@ When Sagemaker creates an endpoint, it essentially runs a container on the reque
 
 ## How do we forward the logs?
 
-To capture the output of the processes which are spawned by serve.py, we need to capture their stdout and stderr streams. Before starting serve.py we modiy the serve bash script to create a named fifo, /sagemake/gelf_fifo. Named fifos are special files on the filesystem which use a memory buffer (Linux default size is 64KB) to implement a fifo. The fifo can be open for write at one end and opened for read at the other, providing a mechanism for inter-process communication.
+To capture the output of the processes which are spawned by serve.py, we need to capture their stdout and stderr streams. Before starting serve.py we modiy the serve bash script to create a named fifo, /sagemaker/gelf_fifo. Named fifos are special files on the filesystem which use a memory buffer (Linux default size is 64KB) to implement a fifo. The fifo can be opened for write at one end and opened for read at the other, providing a mechanism for inter-process communication.
 
-Once we have the named fifo, we start spawn gelf_client.py to loop round, read from the fifo, forward all messages to the gelf endpoint via the pygelf module and then sleep for 1s before checking the fifo again.
+Once we have the named fifo, we spawn gelf_client.py to loop round, read from the fifo, forward all messages to the gelf endpoint via the pygelf module and then sleep for a while before checking the fifo again.
 
 To avoid our gelf client blocking the main worker processes we renice it to a lower OS task priority.
 
